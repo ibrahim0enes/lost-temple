@@ -44,6 +44,15 @@ void AExploCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	if (APlayerController* PC = Cast<PlayerController>(GetController()))
+	{
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
+			ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+		{
+			Subsystem->AddMappingContext(DefaultContext, 0);
+		}
+	}
+	
 }
 
 // Called every frame
