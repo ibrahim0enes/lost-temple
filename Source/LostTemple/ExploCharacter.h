@@ -18,50 +18,37 @@ class LOSTTEMPLE_API AExploCharacter : public ACharacter
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this character's properties
 	AExploCharacter();
 
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-public:	
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
+	virtual void BeginPlay() override;
 
 	// ═══ Components ═══
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	USpringArmComponent* SpringArm;
+	TObjectPtr<USpringArmComponent> SpringArm;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	UCameraComponent* Camera;
+	TObjectPtr<UCameraComponent> Camera;
 
 	// ═══ Input Assets ═══
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	UInputMappingContext* DefaultContext;
+	TObjectPtr<UInputMappingContext> DefaultContext;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	UInputAction* MoveAction;
+	TObjectPtr<UInputAction> MoveAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	UInputAction* LookAction;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	UInputAction* InteractAction;
-
-	// ═══ Input Handlers ═══
-	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
-	void Interact(const FInputActionValue& Value);
+	TObjectPtr<UInputAction> InteractAction;
 
 	// ═══ Movement Settings ═══
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement",
-			  meta = (ClampMin = "100", ClampMax = "1000"))
-	
+		meta = (ClampMin = "100", ClampMax = "1000"))
 	float WalkSpeed = 400.f;
-	
-	// Called to bind functionality to input
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	// ═══ Input Handlers ═══
+	void Move(const FInputActionValue& Value);
+	void Interact(const FInputActionValue& Value);
 };
