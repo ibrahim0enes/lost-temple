@@ -17,6 +17,7 @@ Plugins/**/Saved/
 *.userosscache
 *.sln
 *.vcxproj
+*.slnx
 *.vcxproj.filters
 *.vcxproj.user
 *.VC.db
