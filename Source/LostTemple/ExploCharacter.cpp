@@ -54,6 +54,19 @@ void AExploCharacter::BeginPlay()
 	}
 	
 }
+// Called to bind functionality to input
+
+void AExploCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+	if (UEnhancedInputComponent* EIC =  CastChecked<UENhancedInputComponent>(PlayerInputComponent))
+	{
+        EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AExploCharacter::Move);
+        EIC->BindAction(LookAction,     ETriggerEvent::Triggered, this, &AExploCharacter::Look);
+		EIC->BindAction(InteractAction, ETriggerEvent::Started,   this, &AExploCharacter::Interact);
+	}
+}
 
 // Called every frame
 void AExploCharacter::Tick(float DeltaTime)
@@ -77,9 +90,3 @@ void AExploCharacter::Interact(const FInputActionValue& Value)
 	
 }
 
-// Called to bind functionality to input
-void AExploCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-}
