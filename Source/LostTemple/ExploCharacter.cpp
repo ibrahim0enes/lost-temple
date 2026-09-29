@@ -1,5 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// ═══════════════════════════════════════════
+//  ExploCharacter.cpp
+// ═══════════════════════════════════════════
 #include "ExploCharacter.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -20,12 +21,13 @@ AExploCharacter::AExploCharacter()
     SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm"));
     SpringArm->SetupAttachment(RootComponent);
     SpringArm->TargetArmLength = 1200.f;
-    SpringArm->SetUsingAbsoluteRotation(true);
     SpringArm->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
-    SpringArm->bDoCollisionTest = false;
-    SpringArm->bUsePawnControlRotation = false;
+    SpringArm->bDoCollisionTest = false;        // Top-down için
+
+    // Yaw controller'dan gelir (Look ile döner), pitch/roll sabit kalır
+    SpringArm->bUsePawnControlRotation = true;
+    SpringArm->bInheritYaw = true;
     SpringArm->bInheritPitch = false;
-    SpringArm->bInheritYaw = false;
     SpringArm->bInheritRoll = false;
 
     // ─── Camera ───
@@ -35,7 +37,7 @@ AExploCharacter::AExploCharacter()
 
     // ─── Character Movement ───
     GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-    GetCharacterMovement()->bOrientRotationToMovement = true;
+    GetCharacterMovement()->bOrientRotationToMovement = true;  // Hareket yönüne dön
     GetCharacterMovement()->RotationRate = FRotator(0.f, 640.f, 0.f);
 
     // ─── Rotation ───
@@ -48,13 +50,15 @@ void AExploCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
-    
+    // Blueprint'te WalkSpeed değiştirildiyse yansısın
     GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 
+    // Input Mapping Context'i PlayerController'a bağla
     if (APlayerController* PC = Cast<APlayerController>(GetController()))
     {
         if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
-            ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PC->GetLocalPlayer()))
+            ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(
+                PC->GetLocalPlayer()))
         {
             if (DefaultContext)
             {
@@ -62,6 +66,11 @@ void AExploCharacter::BeginPlay()
             }
         }
     }
+}
+
+void AExploCharacter::Tick(float DeltaTime)
+{
+    Super::Tick(DeltaTime);
 }
 
 void AExploCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -74,6 +83,10 @@ void AExploCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
         {
             EIC->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AExploCharacter::Move);
         }
+        if (LookAction)
+        {
+            EIC->BindAction(LookAction, ETriggerEvent::Triggered, this, &AExploCharacter::Look);
+        }
         if (InteractAction)
         {
             EIC->BindAction(InteractAction, ETriggerEvent::Started, this, &AExploCharacter::Interact);
@@ -81,18 +94,14 @@ void AExploCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
     }
 }
 
-void AExploCharacter::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-}
-
+// ─── Hareket (X = sağ/sol, Y = ileri/geri) ───
 void AExploCharacter::Move(const FInputActionValue& Value)
 {
     const FVector2D MoveInput = Value.Get<FVector2D>();
     if (!Controller || MoveInput.IsNearlyZero()) return;
 
-    // Yönü kameranın yaw'ına göre hesapla (W = ekranda yukarı)
-    const FRotator YawRot(0.f, SpringArm->GetComponentRotation().Yaw, 0.f);
+    // Kamera (controller) yaw'ına göre hareket: W = ekranda yukarı
+    const FRotator YawRot(0.f, Controller->GetControlRotation().Yaw, 0.f);
 
     const FVector ForwardDir = FRotationMatrix(YawRot).GetUnitAxis(EAxis::X);
     const FVector RightDir   = FRotationMatrix(YawRot).GetUnitAxis(EAxis::Y);
@@ -101,6 +110,14 @@ void AExploCharacter::Move(const FInputActionValue& Value)
     AddMovementInput(RightDir,   MoveInput.X);
 }
 
+// ─── Kamera döndürme ───
+void AExploCharacter::Look(const FInputActionValue& Value)
+{
+    const FVector2D LookInput = Value.Get<FVector2D>();
+    AddControllerYawInput(LookInput.X);
+}
+
+// ─── Etkileşim (Interface sonraki aşamada) ───
 void AExploCharacter::Interact(const FInputActionValue& Value)
 {
     UE_LOG(LogTemp, Warning, TEXT("Etkileşim tuşuna basıldı! (Aşama 2'de doldurulacak)"));

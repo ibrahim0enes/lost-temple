@@ -41,6 +41,9 @@ protected:
 	TObjectPtr<UInputAction> MoveAction;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+	TObjectPtr<UInputAction> LookAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	TObjectPtr<UInputAction> InteractAction;
 
 	// ═══ Movement Settings ═══
@@ -50,5 +53,6 @@ protected:
 
 	// ═══ Input Handlers ═══
 	void Move(const FInputActionValue& Value);
+	void Look(const FInputActionValue& Value);
 	void Interact(const FInputActionValue& Value);
 };
