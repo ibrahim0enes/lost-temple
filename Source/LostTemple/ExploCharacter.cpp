@@ -77,16 +77,30 @@ void AExploCharacter::Tick(float DeltaTime)
 
 void AExploCharacter::Move(const FInputActionValue& Value)
 {
+	FVector2d MoveInput =  Value.Get<FVector2D>();
+	if (!Controller ||  MoveInput.IsNearlyZero()) return;
 	
+	const FRotator CanRot = Controller->GetControlRotation();
+    const FRotator YawRot(0.f, CamRot.Yaw, 0.f);
+	
+	const FVector ForwardDir =  FRotationMatrix(YawRot).GetUnitAxes(EAxis::X);
+	const FVector RightDir   = FRotationMatrix(YawRot).GetUnitAxis(EAxis::Y);
+
+	AddMovementInput(ForwardDir, MoveInput.Y);
+	AddMovementInput(RightDir,   MoveInput.X);
+
 }
 
 void AExploCharacter::Look(const FInputActionValue& Value)
 {
-	
+	FVector2D LookInput = Value.Get<FVector2D>();
+    AddControllerYawInput(LookInput.X);
+
 }
 
 void AExploCharacter::Interact(const FInputActionValue& Value)
 {
-	
+	UE_LOG(LogTemp, Warning, TEXT("Etkileşim tuşuna basıldı! (Aşama 2'de doldurulacak)"));
+
 }
 
