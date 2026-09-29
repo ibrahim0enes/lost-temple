@@ -6,7 +6,7 @@ Top-down collector demo — Unreal Engine 5 / C++ + Blueprint.
 
 1. Clone with Git LFS:
    git lfs install
-   git clone https://github.com/SENIN-KULLANICI-ADIN/lost-temple.git
+   git clone https://github.com/ibrahim0enes/lost-temple.git
 2. Open LostTemple.uproject with UE 5.3+
 3. Right-click .uproject → Generate Visual Studio project files
 4. Build Development Editor / Win64
