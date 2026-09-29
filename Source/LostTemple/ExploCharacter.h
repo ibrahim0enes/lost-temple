@@ -23,18 +23,27 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+protected:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	class UInputAction* IA_MoveForward;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	class UInputAction* IA_MoveRight;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	class UInputAction* IA_LookUp;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	class UInputAction* IA_LookRight;
+	
+	void MoveForward(float Value);
+	void MoveRight(float Value);
+	void LookUp(float Value);
+	void LookRight(float Value);
+	
+	
+	
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-	UFUNCTION(BlueprintCallable)
-	void MoveForward(float Value);
-
-	UFUNCTION(BlueprintCallable)
-	void MoveRight(float Value);
-
-	UFUNCTION(BlueprintCallable)
-	void LookUp(float Value);
-
-	UFUNCTION(BlueprintCallable)
-	void LookRight(float Value);
 };
