@@ -12,6 +12,8 @@
 #include "InputActionValue.h"
 #include "InputAction.h"
 #include "InputMappingContext.h"
+#include "Interactable.h" 
+#include "Chaos/AABBTree.h"
 
 AExploCharacter::AExploCharacter()
 {
@@ -120,5 +122,34 @@ void AExploCharacter::Look(const FInputActionValue& Value)
 // ─── Etkileşim (Interface sonraki aşamada) ───
 void AExploCharacter::Interact(const FInputActionValue& Value)
 {
-    UE_LOG(LogTemp, Warning, TEXT("Etkileşim tuşuna basıldı! (Aşama 2'de doldurulacak)"));
+    const float InteractRadius = 200.f;
+    TArray<FOverlapResult> Overlaps;
+    
+    FCollisionQueryParams Params;
+    Params.AddIgnoredActor(this);
+    
+    GetWorld()->OverlapMultiByChannel(
+        Overlaps,
+        GetActorLocation(),
+        FQuat::Identity,
+        ECC_WorldDynamic,
+        FCollisionShape::MakeSphere(InteractRadius),
+        Params
+    );
+    
+    for (const FOverlapResult& Result : Overlaps)
+    {
+        AActor* HitActor = Result.GetActor();
+        if (!HitActor) continue;
+
+        if (HitActor->Implements<UInteractable>())
+        {
+            if (IInteractable::Execute_CanInteract(HitActor, this))
+            {
+                IInteractable::Execute_OnInteract(HitActor, this);
+                UE_LOG(LogTemp, Log, TEXT("Interact: %s"), *HitActor->GetName());
+            }
+        }
+    }
+    
 }

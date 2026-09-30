@@ -8,7 +8,7 @@ public class LostTemple : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "" +
+		PublicDependencyModuleNames.AddRange(new string[] { 
 			"Core",
 			"CoreUObject",
 			"Engine",
@@ -16,7 +16,7 @@ public class LostTemple : ModuleRules
 			"EnhancedInput",
 			"UMG",
 			"Slate",
-			"SlateCore",
+			"SlateCore"
 		});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
