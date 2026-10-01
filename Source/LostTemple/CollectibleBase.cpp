@@ -19,16 +19,16 @@ ACollectibleBase::ACollectibleBase()
     OverlapSphere->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
     OverlapSphere->SetGenerateOverlapEvents(true);
 
-    // ─── Mesh ───
+    // ─── Mesh (visual only, no collision) ───
     MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComp"));
     MeshComp->SetupAttachment(RootComponent);
     MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-    // ─── Dönme Animasyonu ───
+    // ─── Rotation Animation ───
     RotatingComp = CreateDefaultSubobject<URotatingMovementComponent>(TEXT("Rotating"));
     RotatingComp->RotationRate = FRotator(0.f, 90.f, 0.f);
 
-    // ─── Blueprint'ten türetilebilir olduğunu belirt ───
+    // Single-player only; no replication needed
     bReplicates = false;
 }
 
@@ -36,12 +36,12 @@ void ACollectibleBase::BeginPlay()
 {
     Super::BeginPlay();
 
-    // Overlap event'ini bağla
+    // Bind the overlap event
     OverlapSphere->OnComponentBeginOverlap.AddDynamic(
         this, &ACollectibleBase::OnSphereOverlap);
 }
 
-// ─── Overlap Olayı ───
+// ─── Overlap Event ───
 void ACollectibleBase::OnSphereOverlap(UPrimitiveComponent* OverlappedComp,
                                         AActor* OtherActor,
                                         UPrimitiveComponent* OtherComp,
@@ -49,6 +49,7 @@ void ACollectibleBase::OnSphereOverlap(UPrimitiveComponent* OverlappedComp,
                                         bool bFromSweep,
                                         const FHitResult& SweepResult)
 {
+    // Ignore if auto-collect is off or already collected
     if (!bAutoCollectOnOverlap || bIsCollected) return;
 
     if (AExploCharacter* Char = Cast<AExploCharacter>(OtherActor))
@@ -74,26 +75,26 @@ bool ACollectibleBase::CanInteract_Implementation(AActor* Interactor)
     return !bIsCollected;
 }
 
-// ─── Asıl Toplama ───
+// ─── Collection Logic ───
 void ACollectibleBase::Collect(AExploCharacter* Collector)
 {
     if (bIsCollected || !Collector) return;
 
     bIsCollected = true;
 
-    // 1. Delegate'i tetikle → Score sistemi dinliyor
+    // 1. Notify listeners (e.g., score system)
     OnCollected.Broadcast(ItemID, PointValue);
 
-    // 2. Blueprint VFX'i çalıştır
+    // 2. Trigger Blueprint VFX
     OnCollectedVFX();
 
-    // 3. Ses çal (opsiyonel)
+    // 3. Play sound (optional)
     // UGameplayStatics::PlaySoundAtLocation(...)
 
-    // 4. Mesh'i gizle (VFX oynasın diye bir süre bekletilebilir)
+    // 4. Hide mesh and disable collision (actor lives briefly so VFX can play)
     MeshComp->SetVisibility(false);
     OverlapSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-    // 5. 1 saniye sonra Actor'ü yok et
+    // 5. Destroy the actor after 1 second
     SetLifeSpan(1.0f);
 }

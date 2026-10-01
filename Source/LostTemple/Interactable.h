@@ -13,14 +13,17 @@ class UInteractable : public UInterface
 	GENERATED_BODY()
 };
 
+/** Interface for actors the player can interact with (pickups, doors, levers). */
 class LOSTTEMPLE_API IInteractable
 {
 	GENERATED_BODY()
 
 public:
+	/** Called when an actor interacts with this object. */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interact")
 	void OnInteract(AActor* Interactor);
 
+	/** Returns true if the given actor can currently interact with this object. */
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Interact")
 	bool CanInteract(AActor* Interactor);
 };

@@ -12,47 +12,67 @@ class UInputMappingContext;
 class UInputAction;
 struct FInputActionValue;
 
+/** Top-down exploration character with camera rotation and interaction. */
 UCLASS()
 class LOSTTEMPLE_API AExploCharacter : public ACharacter
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:
-	AExploCharacter();
+    AExploCharacter();
 
-	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+    virtual void Tick(float DeltaTime) override;
+
+    /** Binds Enhanced Input actions. */
+    virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 protected:
-	virtual void BeginPlay() override;
+    /** Applies movement settings and registers the input mapping context. */
+    virtual void BeginPlay() override;
 
-	// ═══ Components ═══
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	TObjectPtr<USpringArmComponent> SpringArm;
+    // ═══ Components ═══
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
-	TObjectPtr<UCameraComponent> Camera;
+    /** Boom arm holding the top-down camera. */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+    TObjectPtr<USpringArmComponent> SpringArm;
 
-	// ═══ Input Assets ═══
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UInputMappingContext> DefaultContext;
+    /** Main gameplay camera. */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+    TObjectPtr<UCameraComponent> Camera;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UInputAction> MoveAction;
+    // ═══ Input Assets ═══
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UInputAction> LookAction;
+    /** Mapping context added to the local player on BeginPlay. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+    TObjectPtr<UInputMappingContext> DefaultContext;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
-	TObjectPtr<UInputAction> InteractAction;
+    /** Movement input (2D axis). */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+    TObjectPtr<UInputAction> MoveAction;
 
-	// ═══ Movement Settings ═══
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement",
-		meta = (ClampMin = "100", ClampMax = "1000"))
-	float WalkSpeed = 400.f;
+    /** Camera rotation input. */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+    TObjectPtr<UInputAction> LookAction;
 
-	// ═══ Input Handlers ═══
-	void Move(const FInputActionValue& Value);
-	void Look(const FInputActionValue& Value);
-	void Interact(const FInputActionValue& Value);
+    /** Interaction input (e.g., pick up items). */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
+    TObjectPtr<UInputAction> InteractAction;
+
+    // ═══ Movement Settings ═══
+
+    /** Maximum walking speed (clamped 100-1000). */
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement",
+       meta = (ClampMin = "100", ClampMax = "1000"))
+    float WalkSpeed = 400.f;
+
+    // ═══ Input Handlers ═══
+
+    /** Moves relative to camera yaw. */
+    void Move(const FInputActionValue& Value);
+
+    /** Rotates the camera (yaw only). */
+    void Look(const FInputActionValue& Value);
+
+    /** Interacts with nearby IInteractable actors. */
+    void Interact(const FInputActionValue& Value);
 };

@@ -25,9 +25,9 @@ AExploCharacter::AExploCharacter()
     SpringArm->SetupAttachment(RootComponent);
     SpringArm->TargetArmLength = 1200.f;
     SpringArm->SetRelativeRotation(FRotator(-60.f, 0.f, 0.f));
-    SpringArm->bDoCollisionTest = false;        // Top-down için
+    SpringArm->bDoCollisionTest = false;        // Not needed for top-down
 
-    // Yaw controller'dan gelir (Look ile döner), pitch/roll sabit kalır
+    // Yaw follows the controller (via Look); pitch/roll stay fixed
     SpringArm->bUsePawnControlRotation = true;
     SpringArm->bInheritYaw = true;
     SpringArm->bInheritPitch = false;
@@ -40,7 +40,7 @@ AExploCharacter::AExploCharacter()
 
     // ─── Character Movement ───
     GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
-    GetCharacterMovement()->bOrientRotationToMovement = true;  // Hareket yönüne dön
+    GetCharacterMovement()->bOrientRotationToMovement = true;  // Face movement direction
     GetCharacterMovement()->RotationRate = FRotator(0.f, 640.f, 0.f);
 
     // ─── Rotation ───
@@ -53,10 +53,10 @@ void AExploCharacter::BeginPlay()
 {
     Super::BeginPlay();
 
-    // Blueprint'te WalkSpeed değiştirildiyse yansısın
+    // Apply WalkSpeed in case it was overridden in Blueprint
     GetCharacterMovement()->MaxWalkSpeed = WalkSpeed;
 
-    // Input Mapping Context'i PlayerController'a bağla
+    // Register the Input Mapping Context with the local player
     if (APlayerController* PC = Cast<APlayerController>(GetController()))
     {
         if (UEnhancedInputLocalPlayerSubsystem* Subsystem =
@@ -80,6 +80,7 @@ void AExploCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
 
+    // Bind input actions (Enhanced Input)
     if (UEnhancedInputComponent* EIC = Cast<UEnhancedInputComponent>(PlayerInputComponent))
     {
         if (MoveAction)
@@ -97,13 +98,13 @@ void AExploCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
     }
 }
 
-// ─── Hareket (X = sağ/sol, Y = ileri/geri) ───
+// ─── Movement (X = right/left, Y = forward/back) ───
 void AExploCharacter::Move(const FInputActionValue& Value)
 {
     const FVector2D MoveInput = Value.Get<FVector2D>();
     if (!Controller || MoveInput.IsNearlyZero()) return;
 
-    // Kamera (controller) yaw'ına göre hareket: W = ekranda yukarı
+    // Move relative to camera yaw: W = up on screen
     const FRotator YawRot(0.f, Controller->GetControlRotation().Yaw, 0.f);
 
     const FVector ForwardDir = FRotationMatrix(YawRot).GetUnitAxis(EAxis::X);
@@ -113,14 +114,14 @@ void AExploCharacter::Move(const FInputActionValue& Value)
     AddMovementInput(RightDir,   MoveInput.X);
 }
 
-// ─── Kamera döndürme ───
+// ─── Camera Rotation ───
 void AExploCharacter::Look(const FInputActionValue& Value)
 {
     const FVector2D LookInput = Value.Get<FVector2D>();
     AddControllerYawInput(LookInput.X);
 }
 
-// ─── Etkileşim (Interface sonraki aşamada) ───
+// ─── Interaction ───
 void AExploCharacter::Interact(const FInputActionValue& Value)
 {
     const float InteractRadius = 200.f;
@@ -129,6 +130,7 @@ void AExploCharacter::Interact(const FInputActionValue& Value)
     FCollisionQueryParams Params;
     Params.AddIgnoredActor(this);
     
+    // Find nearby actors within the interaction radius
     GetWorld()->OverlapMultiByChannel(
         Overlaps,
         GetActorLocation(),
@@ -138,6 +140,7 @@ void AExploCharacter::Interact(const FInputActionValue& Value)
         Params
     );
     
+    // Interact with every valid IInteractable in range
     for (const FOverlapResult& Result : Overlaps)
     {
         AActor* HitActor = Result.GetActor();
