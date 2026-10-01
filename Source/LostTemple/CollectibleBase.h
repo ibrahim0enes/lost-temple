@@ -1,5 +1,6 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
+// ═══════════════════════════════════════════
+//  CollectibleBase.h
+// ═══════════════════════════════════════════
 #pragma once
 
 #include "CoreMinimal.h"
@@ -11,65 +12,65 @@ class USphereComponent;
 class UStaticMeshComponent;
 class URotatingMovementComponent;
 
+// ─── Delegate: Bir eşya toplandığında fırlatılır ───
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
-	FOnCollectedSignature, FName, ItemID, int32, Value
+    FOnCollectedSignature, FName, ItemID, int32, Value
 );
 
 UCLASS()
-class LOSTTEMPLE_API ACollectibleBase : public AActor
+class LOSTTEMPLE_API ACollectibleBase : public AActor, public IInteractable
 {
-	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	ACollectibleBase();
-	
-	UPROPERTY(BlueprintAssignable, Category = "Collectible")
-	FOnCollectedSignature OnCollected;
-	
-	virtual void OnInteract_Implementation(AActor* Interactor) override;
-	virtual bool CanInteract_Implementation(AActor* Interactor) override;
+    GENERATED_BODY()
 
+public:
+    ACollectibleBase();
+
+    // ═══ Delegate (Aşama 5'te bağlanacak) ═══
+    UPROPERTY(BlueprintAssignable, Category = "Collectible")
+    FOnCollectedSignature OnCollected;
+
+    // ═══ Interface Implementations ═══
+    virtual void OnInteract_Implementation(AActor* Interactor) override;
+    virtual bool CanInteract_Implementation(AActor* Interactor) override;
 
 protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	USphereComponent* OverlapSphere;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	UStaticMeshComponent* MeshComp;
+    // ─── Components ───
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    USphereComponent* OverlapSphere;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-	URotatingMovementComponent* RotatingComp;
-	
-	UFUNCTION()
-	void OnSphereOverlap(UPrimitiveComponent* OverlappedComp,
-						 AActor* OtherActor,
-						 UPrimitiveComponent* OtherComp,
-						 int32 OtherBodyIndex,
-						 bool bFromSweep,
-						 const FHitResult& SweepResult);
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	FName ItemID = TEXT("Coin");
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	int32 PointValue = 10;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    UStaticMeshComponent* MeshComp;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
-	bool bAutoCollectOnOverlap = true;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+    URotatingMovementComponent* RotatingComp;
 
-	bool bIsCollected = false;
+    // ─── Overlap Events ───
+    UFUNCTION()
+    void OnSphereOverlap(UPrimitiveComponent* OverlappedComp,
+                         AActor* OtherActor,
+                         UPrimitiveComponent* OtherComp,
+                         int32 OtherBodyIndex,
+                         bool bFromSweep,
+                         const FHitResult& SweepResult);
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Item")
-	void OnCollectedVFX();
+    // ─── Data (DataTable'dan gelecek, Aşama 4) ───
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    FName ItemID = TEXT("Coin");
 
-	void Collect(class AExploCharacter* Collector);
-	
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    int32 PointValue = 10;
 
+    // ─── Auto Collect (üstüne basınca otomatik topla) ───
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
+    bool bAutoCollectOnOverlap = true;
+
+    // ─── Internal ───
+    bool bIsCollected = false;
+
+    UFUNCTION(BlueprintImplementableEvent, Category = "Item")
+    void OnCollectedVFX();    // Blueprint'te parçacık/animasyon
+
+    void Collect(class AExploCharacter* Collector);
 };
