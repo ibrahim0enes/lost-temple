@@ -14,6 +14,7 @@
 #include "InputMappingContext.h"
 #include "Interactable.h" 
 #include "Chaos/AABBTree.h"
+#include "Engine/OverlapResult.h"
 
 AExploCharacter::AExploCharacter()
 {
